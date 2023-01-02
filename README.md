@@ -4,6 +4,7 @@
 1. Склонировать репозиторий
 2. Поднять и собрать docker контейнеры
     ```bash
+    cp .env.dev.example .env.dev
     docker-compose up -d --build
     ```
 
