@@ -46,6 +46,9 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'djoser',
+
+    # services
+    'users_service',
 ]
 
 MIDDLEWARE = [
@@ -146,3 +149,5 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': False,
     'UPDATE_LAST_LOGIN': False,
 }
+
+AUTH_USER_MODEL = 'users_service.User'
