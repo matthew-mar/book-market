@@ -10,23 +10,28 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+from dotenv import load_dotenv
+from datetime import timedelta
 from pathlib import Path
-from os import environ
+from os import getenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+ENV_FILE_PATH = str(BASE_DIR.parent.parent)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = environ.get('SECRET_KEY')
+load_dotenv(dotenv_path=f"{ENV_FILE_PATH}/.env.dev")
+
+SECRET_KEY = getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = int(environ.get('DEBUG', default=0))
+DEBUG = getenv('DEBUG', default=0)
 
-ALLOWED_HOSTS = environ.get('ALLOWED_HOSTS').split(' ')
+ALLOWED_HOSTS = getenv('ALLOWED_HOSTS').split(' ')
 
 # Application definition
 
@@ -37,6 +42,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'rest_framework_simplejwt',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -75,12 +84,12 @@ WSGI_APPLICATION = 'book_market.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': environ.get('POSTGRES_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': environ.get('POSTGRES_DB', BASE_DIR / 'db.sqlite3'),
-        'USER': environ.get('POSTGRES_USER', 'user'),
-        'PASSWORD': environ.get('POSTGRES_PASSWORD', 'password'),
-        'HOST': environ.get('POSTGRES_HOST', 'localhost'),
-        'PORT': environ.get('POSTGRES_PORT', '5432'),
+        'ENGINE': getenv('POSTGRES_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': getenv('POSTGRES_DB', BASE_DIR / 'db.sqlite3'),
+        'USER': getenv('POSTGRES_USER', 'user'),
+        'PASSWORD': getenv('POSTGRES_PASSWORD', 'password'),
+        'HOST': getenv('POSTGRES_HOST', 'localhost'),
+        'PORT': getenv('POSTGRES_PORT', '5432'),
     }
 }
 
@@ -124,3 +133,16 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('JWT',),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
+    'UPDATE_LAST_LOGIN': False,
+}
