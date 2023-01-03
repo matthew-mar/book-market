@@ -21,5 +21,6 @@ NAMESPACE = "api/v1"
 urlpatterns = [
     path("admin/", admin.site.urls),
 
+    path(f"{NAMESPACE}/", include("djoser.urls")),
     path(f"{NAMESPACE}/users/", include("users_service.urls")),
 ]
