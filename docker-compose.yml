@@ -20,5 +20,14 @@ services:
       - POSTGRES_PASSWORD=django_password
       - POSTGRES_DB=django_db
 
+  dash:
+    image: mauricenino/dashdot:latest
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - '1488:3001'
+    volumes:
+      - /:/mnt/host:ro
+
 volumes:
   postgres_volume:
