@@ -19,7 +19,7 @@ class FavoriteMutationRequestSerializer(Serializer):
         if value is None:
             raise ValidationException(detail="book_id is required")
         
-        if not is_valid_uuid(object=value):
+        if not is_valid_uuid(value=value):
             raise ValidationException(
                 detail=f"book_id value ({value}) is not a valid uuid string" 
             )

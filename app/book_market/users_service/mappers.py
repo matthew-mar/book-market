@@ -1,5 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.utils import IntegrityError
+from django.db.models import QuerySet
 
 from users_service.exceptions.mappers import FavoriteMapperException
 from users_service.models import Favorite, User
@@ -24,6 +25,10 @@ class FavoriteMapper:
             return True
         except IntegrityError:
             FavoriteMapperException.already_exists()
+
+    @staticmethod
+    def paginate_for_user(user: User) -> QuerySet:
+        return Favorite.objects.filter(user=user)
 
     @staticmethod
     def delete(user: User, book_id: UUID) -> bool:
