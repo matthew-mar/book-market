@@ -24,3 +24,11 @@ class FavoriteMapper:
             return True
         except IntegrityError:
             FavoriteMapperException.already_exists()
+
+    @staticmethod
+    def delete(user: User, book_id: UUID) -> bool:
+        try:
+            Favorite.objects.get(user=user, book_id=book_id).delete()
+            return True
+        except ObjectDoesNotExist:
+            FavoriteMapperException.non_exist()

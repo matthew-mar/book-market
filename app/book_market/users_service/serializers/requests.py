@@ -9,7 +9,7 @@ from typing import Any, Self
 from uuid import UUID
 
 
-class FavoriteCreateRequestSerialzier(Serializer):
+class FavoriteMutationRequestSerializer(Serializer):
     def __init__(self: Self, requrest: Request) -> Self:
         self.request = requrest
         self.validate()
