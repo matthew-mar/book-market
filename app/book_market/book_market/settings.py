@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 
     # services
     'users_service',
+    'orders_service',
 ]
 
 MIDDLEWARE = [
@@ -154,5 +155,5 @@ SIMPLE_JWT = {
 AUTH_USER_MODEL = 'users_service.User'
 
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend", # this line fixed my problem
+    "django.contrib.auth.backends.ModelBackend",
 ]
