@@ -23,4 +23,6 @@ urlpatterns = [
 
     path(f"{NAMESPACE}/", include("djoser.urls")),
     path(f"{NAMESPACE}/users/", include("users_service.urls")),
+
+    path(f"{NAMESPACE}/orders/", include("orders_service.urls")),
 ]
