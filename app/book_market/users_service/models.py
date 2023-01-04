@@ -16,3 +16,12 @@ class User(AbstractBaseUser):
     REQUIRED_FIELDS = ['name', 'surname']
 
     objects = CustomUserManager()
+
+
+class Favorite(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    book_id = models.UUIDField(null=False)
+
+    class Meta:
+        unique_together = ('user', 'book_id')
