@@ -5,11 +5,9 @@ from rest_framework.request import Request
 
 from users_service.exceptions.mappers import FavoriteMapperException
 from users_service.mappers import FavoriteMapper, UserMapper
-from users_service.serializers.requests import (
-    FavoriteMutationRequestSerializer
-)
 
 from common.serializers.responses import SuccessResponseSerializer
+from common.serializers.requests import ForBookRequestSerializer
 from common.exceptions.service import BadRequestException
 from common.services import DjoserService
 
@@ -25,7 +23,7 @@ def favorites_controller(request: Request) -> Response:
 
 
 def add_to_favorites(request: Request) -> Response:
-    request_serializer = FavoriteMutationRequestSerializer(requrest=request)
+    request_serializer = ForBookRequestSerializer(requrest=request)
 
     user_data = DjoserService.me(
         jwt_token=request.headers.get("Authorization")
@@ -45,7 +43,7 @@ def add_to_favorites(request: Request) -> Response:
 
 
 def remove_from_favorites(request: Request) -> Response:
-    request_serializer = FavoriteMutationRequestSerializer(requrest=request)
+    request_serializer = ForBookRequestSerializer(requrest=request)
 
     user_data = DjoserService.me(
         jwt_token=request.headers.get("Authorization")
