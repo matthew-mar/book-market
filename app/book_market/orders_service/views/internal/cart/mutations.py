@@ -13,8 +13,16 @@ from orders_service.exceptions.mappers import CartMapperException
 from orders_service.mappers import CartMapper
 
 
-@api_view(http_method_names=["POST"])
+@api_view(http_method_names=["POST", "DELETE"])
 @permission_classes(permission_classes=[IsAuthenticated])
+def cart_controller(request: Request) -> Response:
+    match (request.method):
+        case "POST":
+            return add_to_cart(request=request)
+        case "DELETE":
+            return delete_from_cart(request=request)
+
+
 def add_to_cart(request: Request) -> Response:
     request_serializer = ForBookRequestSerializer(requrest=request)
 
@@ -31,4 +39,23 @@ def add_to_cart(request: Request) -> Response:
     except CartMapperException as e:
         raise BadRequestException(detail=e.args[0])
 
+    return Response(data=SuccessResponseSerializer(result=result).data)
+
+
+def delete_from_cart(request: Request) -> Response:
+    request_serializer = ForBookRequestSerializer(requrest=request)
+
+    try:
+        user = DjoserService.me(jwt_token=request.headers.get("Authorization"))
+    except DjoserException as e:
+        raise BadRequestException(detail=e.args[0])
+    
+    try:
+        result = CartMapper.delete(
+            user_id=user.id, 
+            book_id=request_serializer.book_id
+        )
+    except CartMapperException as e:
+        raise BadRequestException(detail=e.args[0])
+    
     return Response(data=SuccessResponseSerializer(result=result).data)

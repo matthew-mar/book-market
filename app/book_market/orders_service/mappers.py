@@ -9,6 +9,7 @@ from django.db.utils import IntegrityError
 from django.db.models import QuerySet
 
 from uuid import UUID, uuid4
+import logging
 
 
 class PayMethodMapper:
@@ -48,6 +49,25 @@ class BooksetMapper:
 
         return True
 
+    @staticmethod
+    def remove(user_id: UUID, set_id: UUID, book_id: UUID) -> bool:
+        try:
+            Bookset.objects.get(
+                user_id=user_id, 
+                set_id=set_id, 
+                book_id=book_id
+            ).delete()
+        except ObjectDoesNotExist:
+            raise BooksetMapperException(
+                BooksetMapperException.BOOK_NOT_EXIST_MESSAGE
+            )
+
+        return True
+
+    @staticmethod
+    def count_for_user_in_set(user_id: UUID, set_id: UUID) -> int:
+        return len(Bookset.objects.filter(user_id=user_id, set_id=set_id))
+
 
 class CartMapper:
     @staticmethod
@@ -67,5 +87,35 @@ class CartMapper:
 
             book_set = BooksetMapper.create(user_id=user_id, book_id=book_id)
             Cart(user_id=user_id, set_id=book_set.set_id).save()
+        
+        return True
+
+    @staticmethod
+    def delete(user_id: UUID, book_id: UUID) -> bool:
+        try:
+            cart = Cart.objects.get(user_id=user_id)
+            
+            BooksetMapper.remove(
+                user_id=user_id, 
+                set_id=cart.set_id, 
+                book_id=book_id
+            )
+
+            books_in_set_count = BooksetMapper.count_for_user_in_set(
+                user_id=user_id, 
+                set_id=cart.set_id
+            )
+            if books_in_set_count == 0:
+                cart.delete()
+        
+        except ObjectDoesNotExist:
+            raise CartMapperException(
+                CartMapperException.CART_EMPTY_MESSAGE
+            )
+        
+        except BooksetMapperException:
+            raise CartMapperException(
+                CartMapperException.BOOK_NOT_EXIST_IN_CART_MESSAGE
+            )
         
         return True
