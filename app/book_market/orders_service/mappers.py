@@ -116,6 +116,10 @@ class BooksetMapper:
                 BooksetMapperException.BOOK_NOT_EXIST_MESSAGE
             )
 
+    @staticmethod
+    def find_for_user_in_set(user_id: UUID, set_id: UUID) -> QuerySet[Bookset]:
+        return Bookset.objects.filter(user_id=user_id, set_id=set_id)
+
 
 class CartMapper:
     @staticmethod
