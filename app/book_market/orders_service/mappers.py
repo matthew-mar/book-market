@@ -68,6 +68,29 @@ class BooksetMapper:
     def count_for_user_in_set(user_id: UUID, set_id: UUID) -> int:
         return len(Bookset.objects.filter(user_id=user_id, set_id=set_id))
 
+    
+    @staticmethod
+    def increase_book_amount(
+        user_id: UUID, 
+        set_id: UUID, 
+        book_id: UUID
+    ) -> bool:
+        try:
+            book_set = Bookset.objects.get(
+                user_id=user_id, 
+                set_id=set_id, 
+                book_id=book_id
+            )
+            book_set.amount += 1
+            book_set.save()
+
+        except ObjectDoesNotExist:
+            raise BooksetMapperException(
+                BooksetMapperException.BOOK_NOT_EXIST_MESSAGE
+            )
+        
+        return True
+
 
 class CartMapper:
     @staticmethod
@@ -119,3 +142,23 @@ class CartMapper:
             )
         
         return True
+
+    @staticmethod
+    def increase_book_amount(user_id: UUID, book_id: UUID) -> bool:
+        try:
+            cart = Cart.objects.get(user_id=user_id)
+            return BooksetMapper.increase_book_amount(
+                user_id=user_id, 
+                set_id=cart.set_id, 
+                book_id=book_id
+            )
+        
+        except ObjectDoesNotExist:
+            raise CartMapperException(
+                CartMapperException.CART_EMPTY_MESSAGE
+            )
+
+        except BooksetMapperException:
+            raise CartMapperException(
+                CartMapperException.BOOK_NOT_EXIST_IN_CART_MESSAGE
+            )

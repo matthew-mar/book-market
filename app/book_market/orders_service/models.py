@@ -17,6 +17,7 @@ class Bookset(models.Model):
     set_id = models.UUIDField(null=False)
     user_id = models.UUIDField(null=False)
     book_id = models.UUIDField(null=False)
+    amount = models.IntegerField(default=1)
 
     class Meta:
         unique_together = ("set_id", "user_id", "book_id")
