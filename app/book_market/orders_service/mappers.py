@@ -91,6 +91,31 @@ class BooksetMapper:
         
         return True
 
+    @staticmethod
+    def decrease_book_amount(
+        user_id: UUID,
+        set_id: UUID,
+        book_id: UUID
+    ) -> bool:
+        try:
+            book_set = Bookset.objects.get(
+                user_id=user_id, 
+                set_id=set_id,
+                book_id=book_id
+            )
+            if book_set.amount == 1:
+                book_set.delete()
+                return True
+            
+            book_set.amount -= 1
+            book_set.save()
+            return True
+        
+        except ObjectDoesNotExist:
+            raise BooksetMapperException(
+                BooksetMapperException.BOOK_NOT_EXIST_MESSAGE
+            )
+
 
 class CartMapper:
     @staticmethod
@@ -158,6 +183,35 @@ class CartMapper:
                 CartMapperException.CART_EMPTY_MESSAGE
             )
 
+        except BooksetMapperException:
+            raise CartMapperException(
+                CartMapperException.BOOK_NOT_EXIST_IN_CART_MESSAGE
+            )
+
+    @staticmethod
+    def decrease_book_amount(user_id: UUID, book_id: UUID) -> bool:
+        try:
+            cart = Cart.objects.get(user_id=user_id)
+            
+            result = BooksetMapper.decrease_book_amount(
+                user_id=user_id,
+                set_id=cart.set_id,
+                book_id=book_id
+            )
+
+            books_in_set_amount = BooksetMapper.count_for_user_in_set(
+                user_id=user_id, set_id=cart.set_id
+            )
+            if books_in_set_amount == 0:
+                cart.delete()
+            
+            return result
+        
+        except ObjectDoesNotExist:
+            raise CartMapperException(
+                CartMapperException.CART_EMPTY_MESSAGE
+            )
+        
         except BooksetMapperException:
             raise CartMapperException(
                 CartMapperException.BOOK_NOT_EXIST_IN_CART_MESSAGE

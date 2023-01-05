@@ -32,3 +32,24 @@ def increase(request: Request) -> Response:
         raise BadRequestException(detail=e.args[0])
     
     return Response(data=SuccessResponseSerializer(result=result).data)
+
+
+@api_view(http_method_names=["POST"])
+@permission_classes(permission_classes=[IsAuthenticated])
+def decrease(request: Request) -> Response:
+    request_serializer = ForBookRequestSerializer(requrest=request)
+
+    try:
+        user = DjoserService.me(jwt_token=request.headers.get("Authorization"))
+    except DjoserException as e:
+        raise BadRequestException(detail=e.args[0])
+    
+    try:
+        result = CartMapper.decrease_book_amount(
+            user_id=user.id,
+            book_id=request_serializer.book_id
+        )
+    except CartMapperException as e:
+        raise BadRequestException(detail=e.args[0])
+    
+    return Response(data=SuccessResponseSerializer(result=result).data)
