@@ -14,7 +14,7 @@ class PaginationRequestSerializer(BaseSerializer):
         self.request = request
         self.validate()
     
-    def validate(self: Self):
+    def validate(self: Self) -> None:
         params = {
             "page": self.request.query_params.get("page"),
             "page_size": self.request.query_params.get("page_size")

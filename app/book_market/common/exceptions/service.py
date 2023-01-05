@@ -7,3 +7,7 @@ class ValidationException(APIException):
 
 class BadRequestException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
+
+
+class NotFoundException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
