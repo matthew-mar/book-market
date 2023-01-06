@@ -1,5 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 from books_service.models import Genre, Author, Book
+from typing import Self
 
 
 class GenreSerializer(ModelSerializer):
@@ -21,10 +22,13 @@ class BookSerializer(ModelSerializer):
     
     def __init__(self, instance=None, data=..., **kwargs):
         super().__init__(instance, data, **kwargs)
-        self._data = {}
     
-    def to_representation(self, instance: Book) -> dict:
-        self._data.update({
+    @property
+    def data(self: Self):
+        return self.to_representation(instance=self.instance)
+    
+    def to_representation(self, instance: Book):
+        return {
             "id": instance.id,
             "name": instance.name,
             "image_id": instance.image_id,
@@ -33,6 +37,5 @@ class BookSerializer(ModelSerializer):
             "genre": GenreSerializer(instance=instance.genre).data,
             "author": AuthorSerializer(instance=instance.author).data,
             "description": instance.description,
-            "created_at": instance.created_at
-        })
-        return self._data
+            "created_at": instance.created_at,
+        }

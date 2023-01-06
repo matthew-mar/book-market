@@ -28,3 +28,7 @@ class BookMapper:
             raise BookMapperException(
                 BookMapperException.BOOK_NOT_EXIST_MESSAGE
             )
+
+    @staticmethod
+    def filter_books(filter_param: str, filter_order: str) -> QuerySet[Book]:
+        return Book.objects.all().order_by(f"{filter_order}{filter_param}")
