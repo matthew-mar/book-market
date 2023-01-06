@@ -13,11 +13,15 @@ class CartMapperException(Exception):
 
     CART_EMPTY_MESSAGE = "cart is empty"
 
+    SET_NOT_IN_CART_MESSAGE = "set not in cart"
+
 
 class OrderMapperException(Exception):
     ORDER_ALREADY_EXIST_MESSAGE = "order already exist"
 
     ORDER_NOT_EXIST_MESSAGE = "order not exist"
+
+    FAILED_CREATE_MESSAGE = "failed create order"
 
 
 class PayMenthodMapperException(Exception):

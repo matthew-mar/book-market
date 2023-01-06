@@ -169,7 +169,7 @@ class CartMapper:
         return True
 
     @staticmethod
-    def delete(user_id: UUID, book_id: UUID) -> bool:
+    def delete_book_from_cart(user_id: UUID, book_id: UUID) -> bool:
         try:
             cart = Cart.objects.get(user_id=user_id)
             
@@ -247,6 +247,16 @@ class CartMapper:
                 CartMapperException.BOOK_NOT_EXIST_IN_CART_MESSAGE
             )
 
+    @staticmethod
+    def delete(user_id: UUID, set_id: UUID) -> bool:
+        try:
+            Cart.objects.get(user_id=user_id, set_id=set_id).delete()
+            return True
+        except ObjectDoesNotExist:
+            raise CartMapperException(
+                CartMapperException.CART_EMPTY_MESSAGE
+            )
+
 
 class OrderMapper:
     @staticmethod
@@ -265,6 +275,14 @@ class OrderMapper:
                 set_id=set_id,
                 user_id=user_id
             ).save()
+
+            try:
+                CartMapper.delete(user_id=user_id, set_id=set_id)
+            except CartMapperException as e:
+                raise OrderMapperException(
+                    f"{OrderMapperException.FAILED_CREATE_MESSAGE}: {e.args[0]}"
+                )
+
             return True
         except IntegrityError:
             raise OrderMapperException(
@@ -279,3 +297,7 @@ class OrderMapper:
             raise OrderMapperException(
                 OrderMapperException.ORDER_NOT_EXIST_MESSAGE
             )
+
+    @staticmethod
+    def find_for_user(user_id: UUID) -> QuerySet[Order]:
+        return Order.objects.filter(user_id=user_id)

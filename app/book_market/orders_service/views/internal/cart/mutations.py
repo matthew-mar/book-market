@@ -51,7 +51,7 @@ def delete_from_cart(request: Request) -> Response:
         raise BadRequestException(detail=e.args[0])
     
     try:
-        result = CartMapper.delete(
+        result = CartMapper.delete_book_from_cart(
             user_id=user.id, 
             book_id=request_serializer.book_id
         )
