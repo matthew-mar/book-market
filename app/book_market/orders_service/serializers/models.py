@@ -1,4 +1,4 @@
-from orders_service.models import PayMethod, DeliveryMethod, Bookset
+from orders_service.models import PayMethod, DeliveryMethod, Bookset, Order
 from rest_framework.serializers import ModelSerializer
 
 
@@ -23,3 +23,9 @@ class BooksetSerializer(ModelSerializer):
 class BooksetInPaginationListSerializer(BooksetSerializer):
     def to_representation(self, instance: Bookset):
         return instance.book_id
+
+
+class OrderSerializer(ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ("id", "user_id", "number", "address", "set_id", "created_at")

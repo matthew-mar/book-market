@@ -17,6 +17,8 @@ class CartMapperException(Exception):
 class OrderMapperException(Exception):
     ORDER_ALREADY_EXIST_MESSAGE = "order already exist"
 
+    ORDER_NOT_EXIST_MESSAGE = "order not exist"
+
 
 class PayMenthodMapperException(Exception):
     PAYMENT_METHOD_NOT_EXIST_MESSAGE = "payment method not exist"
