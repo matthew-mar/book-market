@@ -1,7 +1,16 @@
-from orders_service.models import PayMethod, DeliveryMethod, Bookset, Cart
 from orders_service.exceptions.mappers import (
+    DeliveryMethodMapperException,
+    PayMenthodMapperException,
     BooksetMapperException, 
+    OrderMapperException,
     CartMapperException,
+)
+from orders_service.models import (
+    DeliveryMethod, 
+    PayMethod, 
+    Bookset, 
+    Order,
+    Cart, 
 )
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -9,19 +18,36 @@ from django.db.utils import IntegrityError
 from django.db.models import QuerySet
 
 from uuid import UUID, uuid4
-import logging
 
 
 class PayMethodMapper:
     @staticmethod
     def all() -> QuerySet:
         return PayMethod.objects.all()
+    
+    @staticmethod
+    def get_by_id(id: UUID) -> PayMethod:
+        try:
+            return PayMethod.objects.get(id=id)
+        except ObjectDoesNotExist:
+            raise PayMenthodMapperException(
+                PayMenthodMapperException.PAYMENT_METHOD_NOT_EXIST_MESSAGE
+            )
 
 
 class DeliveryMethodMapper:
     @staticmethod
     def all() -> QuerySet:
         return DeliveryMethod.objects.all()
+
+    @staticmethod
+    def get_by_id(id: UUID) -> DeliveryMethod:
+        try:
+            return DeliveryMethod.objects.get(id=id)
+        except ObjectDoesNotExist:
+            raise DeliveryMethodMapperException(
+                DeliveryMethodMapperException.DELIVERY_METHOD_NOT_EXIST_MESSAGE
+            )
 
 
 class BooksetMapper:
@@ -219,4 +245,28 @@ class CartMapper:
         except BooksetMapperException:
             raise CartMapperException(
                 CartMapperException.BOOK_NOT_EXIST_IN_CART_MESSAGE
+            )
+
+
+class OrderMapper:
+    @staticmethod
+    def create(
+        payment_method: PayMethod, 
+        delivery_method: DeliveryMethod,
+        address: str,
+        set_id: UUID,
+        user_id: UUID
+    ) -> bool:
+        try:
+            Order(
+                payment_method=payment_method, 
+                delivery_method=delivery_method,
+                address=address,
+                set_id=set_id,
+                user_id=user_id
+            ).save()
+            return True
+        except IntegrityError:
+            raise OrderMapperException(
+                OrderMapperException.ORDER_ALREADY_EXIST_MESSAGE
             )
