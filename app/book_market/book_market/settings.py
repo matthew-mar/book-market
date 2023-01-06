@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     # services
     'users_service',
     'orders_service',
+    'books_service',
 ]
 
 MIDDLEWARE = [

@@ -25,4 +25,6 @@ urlpatterns = [
     path(f"{NAMESPACE}/users/", include("users_service.urls")),
 
     path(f"{NAMESPACE}/orders/", include("orders_service.urls")),
+
+    path(f"{NAMESPACE}/books/", include("books_service.urls")),
 ]
