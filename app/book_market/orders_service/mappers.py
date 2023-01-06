@@ -270,3 +270,12 @@ class OrderMapper:
             raise OrderMapperException(
                 OrderMapperException.ORDER_ALREADY_EXIST_MESSAGE
             )
+
+    @staticmethod
+    def get_for_user_by_id(user_id: UUID, id: UUID) -> Order:
+        try:
+            return Order.objects.get(user_id=user_id, id=id)
+        except ObjectDoesNotExist:
+            raise OrderMapperException(
+                OrderMapperException.ORDER_NOT_EXIST_MESSAGE
+            )
