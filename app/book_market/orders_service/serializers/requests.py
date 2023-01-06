@@ -119,3 +119,18 @@ class OrderCreateRequestSerializer(BaseSerializer):
             raise BadRequestException(detail=e.args[0])
         
         self.address = address
+
+
+class OrderPaginatedListRequestSerializer(PaginationRequestSerializer):
+    def __init__(self: Self, request: Request) -> Self:
+        super().__init__(request)
+    
+    def validate(self: Self) -> None:
+        super().validate()
+
+        try:
+            self.user = DjoserService.me(
+                jwt_token=self.request.headers.get("Authorization")
+            )
+        except DjoserException as e:
+            raise BadRequestException(detail=e.args[0])

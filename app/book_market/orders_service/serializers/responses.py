@@ -1,4 +1,3 @@
-from common.serializers.responses import PaginatedResponseSerializer
 from rest_framework.serializers import BaseSerializer
 from rest_framework.pagination import DjangoPaginator
 
@@ -10,7 +9,7 @@ from orders_service.serializers.models import (
 )
 from orders_service.models import Order
 
-from datetime import datetime
+from common.serializers.responses import PaginatedResponseSerializer
 from typing import Self
 
 
@@ -27,20 +26,14 @@ class BooksInBooksetPaginatedResponseSerializer(PaginatedResponseSerializer):
         ).data
 
 
-class OrderDetailSerializer(BaseSerializer):
+class OrderInPaginatedListResponseSerializer(PaginatedResponseSerializer):
     def __init__(
-        self: Self, 
-        order: Order
+        self: Self,
+        paginator: DjangoPaginator,
+        page_number: int
     ) -> Self:
-        self.order = order
-    
-    @property
-    def data(self: Self):
-        data = OrderSerializer(self.order).data
-        data["payment_method"] = PayMethodSerializer(
-            instance=self.order.payment_method
+        super().__init__(paginator=paginator, page_number=page_number)
+        self.results = OrderSerializer(
+            instance=self.page.object_list,
+            many=True
         ).data
-        data["delivery_method"] = DeliveryMethodSerializer(
-            instance=self.order.delivery_method
-        ).data
-        return data
