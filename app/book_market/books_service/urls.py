@@ -4,4 +4,5 @@ NAMESPACE = "books_service.routes"
 
 urlpatterns = [
     path("", include(f"{NAMESPACE}.genre")),
+    path("", include(f"{NAMESPACE}.author")),
 ]
