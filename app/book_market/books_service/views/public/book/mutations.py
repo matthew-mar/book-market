@@ -37,6 +37,17 @@ def cart_controller(request: Request, book_id: UUID) -> Response:
             return remove_from_cart(request=request, book_id=book_id)
 
 
+@api_view(http_method_names=["PATCH"])
+def decrease_amount(request: Request, book_id: UUID) -> Response:
+    try:
+        book = BookMapper.get_by_id(id=book_id)
+        result = BookMapper.decrease_book_amount(book=book)
+    except BookMapperException as e:
+        raise NotFoundException(detail=e.args[0])
+    
+    return Response(data=SuccessResponseSerializer(result=result).data)
+
+
 def add_to_favorites(request: Request, book_id: UUID) -> Response:
     try:
         book = BookMapper.get_by_id(id=book_id)
