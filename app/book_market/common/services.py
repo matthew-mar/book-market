@@ -178,3 +178,23 @@ class OrdersService:
             ))
         
         return True
+
+    @staticmethod
+    def remove_from_cart(jwt_token: str, book_id: UUID) -> bool:
+        response = requests.delete(
+            url=f"{OrdersService.BASE_URL}/cart",
+            headers={
+                "Authorization": jwt_token
+            },
+            data={
+                "book_id": book_id
+            }
+        )
+
+        if not response.ok:
+            raise OrdersServiceException("{}: {}".format(
+                OrdersServiceException.FAILED_REMOVE_FROM_CART_MESSAGE,
+                response.json().get("detail")
+            ))
+        
+        return True

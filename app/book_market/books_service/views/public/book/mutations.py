@@ -34,7 +34,7 @@ def cart_controller(request: Request, book_id: UUID) -> Response:
         case "POST":
             return add_to_cart(request=request, book_id=book_id)
         case "DELETE":
-            pass
+            return remove_from_cart(request=request, book_id=book_id)
 
 
 def add_to_favorites(request: Request, book_id: UUID) -> Response:
@@ -78,6 +78,24 @@ def add_to_cart(request: Request, book_id: UUID) -> Response:
         book = BookMapper.get_by_id(id=book_id)
 
         result = OrdersService.add_to_cart(
+            jwt_token=request.headers.get("Authorization"),
+            book_id=book.id
+        )
+    
+    except BookMapperException as e:
+        raise NotFoundException(detail=e.args[0])
+    
+    except OrdersServiceException as e:
+        raise BadRequestException(detail=e.args[0])
+    
+    return Response(data=SuccessResponseSerializer(result=result).data)
+
+
+def remove_from_cart(request: Request, book_id: UUID) -> Response:
+    try:
+        book = BookMapper.get_by_id(id=book_id)
+
+        result = OrdersService.remove_from_cart(
             jwt_token=request.headers.get("Authorization"),
             book_id=book.id
         )
