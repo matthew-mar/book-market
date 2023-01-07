@@ -9,7 +9,7 @@ from users_service.mappers import FavoriteMapper, UserMapper
 from common.serializers.responses import SuccessResponseSerializer
 from common.serializers.requests import ForBookRequestSerializer
 from common.exceptions.service import BadRequestException
-from common.services import DjoserService
+from common.services import UsersService
 
 
 @api_view(http_method_names=["POST", "DELETE"])
@@ -25,7 +25,7 @@ def favorites_controller(request: Request) -> Response:
 def add_to_favorites(request: Request) -> Response:
     request_serializer = ForBookRequestSerializer(requrest=request)
 
-    user_data = DjoserService.me(
+    user_data = UsersService.me(
         jwt_token=request.headers.get("Authorization")
     )
 
@@ -45,7 +45,7 @@ def add_to_favorites(request: Request) -> Response:
 def remove_from_favorites(request: Request) -> Response:
     request_serializer = ForBookRequestSerializer(requrest=request)
 
-    user_data = DjoserService.me(
+    user_data = UsersService.me(
         jwt_token=request.headers.get("Authorization")
     )
 

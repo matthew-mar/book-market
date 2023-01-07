@@ -6,7 +6,7 @@ from rest_framework.request import Request
 
 from common.serializers.requests import PaginationRequestSerializer
 from common.exceptions.service import ValidationException
-from common.services import DjoserService
+from common.services import UsersService
 
 from users_service.mappers import UserMapper, FavoriteMapper
 from users_service.serializers.responses import (
@@ -19,7 +19,7 @@ from users_service.serializers.responses import (
 def paginate(request: Request) -> Response:
     request_serializer = PaginationRequestSerializer(request=request)
 
-    user_data = DjoserService.me(
+    user_data = UsersService.me(
         jwt_token=request.headers.get("Authorization")
     )
 
