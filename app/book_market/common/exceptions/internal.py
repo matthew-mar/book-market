@@ -16,3 +16,5 @@ class UsersServiceException(Exception):
 
 class OrdersServiceException(Exception):
     FAILED_GET_FROM_SET = "failed get info from set"
+
+    FAILED_ADD_TO_CART_MESSAGE = "failed add to cart message"
