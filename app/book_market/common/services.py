@@ -1,7 +1,17 @@
 import requests
 
-from common.exceptions.internal import UsersServiceException
-from common.data_models import UserData, FavoritesList
+from common.exceptions.internal import (
+    OrdersServiceException,
+    UsersServiceException, 
+)
+from common.data_models import (
+    BooksetDataList,
+    FavoritesList,
+    BooksetData,
+    UserData,
+)
+
+from uuid import UUID
 
 
 class UsersService:
@@ -60,4 +70,51 @@ class UsersService:
             next=decoded_response.get("next"),
             previous=decoded_response.get("previous"),
             page_size=decoded_response.get("page_size")
+        )
+
+
+class OrdersService:
+    BASE_URL = "http://localhost:8000/api/v1/orders/internal"
+
+    @staticmethod
+    def get_from_bookset(
+        jwt_token: str,
+        set_id: UUID,
+        page: int,
+        page_size: int
+    ) -> BooksetDataList:
+        response = requests.get(
+            url=f"{OrdersService.BASE_URL}/book-set/{set_id}",
+            headers={
+                "Authorization": jwt_token
+            },
+            params={
+                "page": page,
+                "page_size": page_size
+            }
+        )
+
+        if not response.ok:
+            raise OrdersServiceException("{}: {}".format(
+                    OrdersServiceException.FAILED_GET_FROM_SET,
+                    response.json().get("detail")
+                ))
+        
+        decoded_response: dict = response.json()
+
+        return BooksetDataList(
+            count=decoded_response.get("count"),
+            next=decoded_response.get("next"),
+            previous=decoded_response.get("previous"),
+            page_size=decoded_response.get("page_size"),
+            bookset_list=list(map(
+                lambda bookset_dict: BooksetData(
+                    id=bookset_dict.get("id"),
+                    set_id=bookset_dict.get("set_id"),
+                    user_id=bookset_dict.get("user_id"),
+                    amount=bookset_dict.get("amount"),
+                    book_id=bookset_dict.get("book_id")
+                ),
+                decoded_response.get("results")
+            ))
         )
