@@ -73,10 +73,7 @@ class UsersService:
         )
 
     @staticmethod
-    def add_to_favorites(
-        jwt_token: str,
-        book_id: UUID
-    ) -> bool:
+    def add_to_favorites(jwt_token: str, book_id: UUID) -> bool:
         response = requests.post(
             url=f"{UsersService.BASE_URL}/internal/favorites",
             headers={
@@ -96,10 +93,7 @@ class UsersService:
         return True
     
     @staticmethod
-    def remove_from_favorites(
-        jwt_token: str,
-        book_id: UUID
-    ) -> bool:
+    def remove_from_favorites(jwt_token: str, book_id: UUID) -> bool:
         response = requests.delete(
             url=f"{UsersService.BASE_URL}/internal/favorites",
             headers={
@@ -164,3 +158,23 @@ class OrdersService:
                 decoded_response.get("results")
             ))
         )
+
+    @staticmethod
+    def add_to_cart(jwt_token: str, book_id: UUID) -> bool:
+        response = requests.post(
+            url=f"{OrdersService.BASE_URL}/cart",
+            headers={
+                "Authorization": jwt_token
+            },
+            data={
+                "book_id": book_id
+            }
+        )
+
+        if not response.ok:
+            raise OrdersServiceException("{}: {}".format(
+                OrdersServiceException.FAILED_ADD_TO_CART_MESSAGE,
+                response.json().get("detail")
+            ))
+        
+        return True
