@@ -3,6 +3,8 @@ class UsersServiceException(Exception):
 
     FAILED_GET_FAVORITES = "failed get books from favorites"
 
+    FAILED_ADD_TO_FAVORITES_MESSAGE = "failed add book to favorites"
+
     @staticmethod
     def failed_get_user():
         raise UsersServiceException(

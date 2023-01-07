@@ -72,6 +72,29 @@ class UsersService:
             page_size=decoded_response.get("page_size")
         )
 
+    @staticmethod
+    def add_to_favorites(
+        jwt_token: str,
+        book_id: UUID
+    ) -> bool:
+        response = requests.post(
+            url=f"{UsersService.BASE_URL}/internal/favorites",
+            headers={
+                "Authorization": jwt_token
+            },
+            data={
+                "book_id": book_id
+            }
+        )
+
+        if not response.ok:
+            raise UsersServiceException("{}: {}".format(
+                UsersServiceException.FAILED_ADD_TO_FAVORITES_MESSAGE,
+                response.json().get("detail")
+            ))
+        
+        return True
+
 
 class OrdersService:
     BASE_URL = "http://localhost:8000/api/v1/orders/internal"
