@@ -14,13 +14,39 @@ from common.services import UsersService
 from uuid import UUID
 
 
-@api_view(http_method_names=["POST"])
+@api_view(http_method_names=["POST", "DELETE"])
 @permission_classes(permission_classes=[IsAuthenticated])
+def favorite_controller(request: Request, book_id: UUID) -> Response:
+    match request.method:
+        case "POST":
+            return add_to_favorites(request=request, book_id=book_id)
+        case "DELETE":
+            return remove_from_favorites(request=request, book_id=book_id)
+
+
 def add_to_favorites(request: Request, book_id: UUID) -> Response:
     try:
         book = BookMapper.get_by_id(id=book_id)
 
         result = UsersService.add_to_favorites(
+            jwt_token=request.headers.get("Authorization"),
+            book_id=book.id
+        )
+    
+    except BookMapperException as e:
+        raise NotFoundException(detail=e.args[0])
+    
+    except UsersServiceException as e:
+        raise BadRequestException(detail=e.args[0])
+    
+    return Response(data=SuccessResponseSerializer(result=result).data)
+
+
+def remove_from_favorites(request: Request, book_id: UUID) -> Response:
+    try:
+        book = BookMapper.get_by_id(id=book_id)
+
+        result = UsersService.remove_from_favorites(
             jwt_token=request.headers.get("Authorization"),
             book_id=book.id
         )

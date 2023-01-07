@@ -94,6 +94,29 @@ class UsersService:
             ))
         
         return True
+    
+    @staticmethod
+    def remove_from_favorites(
+        jwt_token: str,
+        book_id: UUID
+    ) -> bool:
+        response = requests.delete(
+            url=f"{UsersService.BASE_URL}/internal/favorites",
+            headers={
+                "Authorization": jwt_token
+            },
+            data={
+                "book_id": book_id
+            }
+        )
+
+        if not response.ok:
+            raise UsersServiceException("{}: {}".format(
+                UsersServiceException.FAILED_REMOVE_FROM_FAVORITES_MESSAGE,
+                response.json().get("detail")
+            ))
+        
+        return True
 
 
 class OrdersService:
