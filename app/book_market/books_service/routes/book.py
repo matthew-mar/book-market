@@ -1,6 +1,7 @@
 from books_service.views.public.book.mutations import (
     favorite_controller,
     cart_controller,
+    decrease_amount,
 )
 from books_service.views.public.book.details import (
     favorites,
@@ -17,4 +18,5 @@ urlpatterns = [
     path(route="bookset", view=bookset),
     path(route="<uuid:book_id>/favorite", view=favorite_controller),
     path(route="<uuid:book_id>/cart", view=cart_controller),
+    path(route="<uuid:book_id>/decrease-amount", view=decrease_amount),
 ]

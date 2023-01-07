@@ -36,3 +36,13 @@ class BookMapper:
     @staticmethod
     def find_by_ids(ids: list[UUID]) -> QuerySet[Book]:
         return Book.objects.filter(id__in=ids)
+
+    @staticmethod
+    def decrease_book_amount(book: Book) -> bool:
+        if book.amount == 1:
+            book.delete()
+        
+        book.amount -= 1
+        book.save()
+
+        return True
