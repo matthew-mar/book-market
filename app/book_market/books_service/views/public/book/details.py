@@ -4,18 +4,25 @@ from rest_framework.pagination import DjangoPaginator
 from rest_framework.response import Response
 from rest_framework.request import Request
 
-from books_service.serializers.requests import BooksFilterRequestSerializer
+from books_service.serializers.requests import (
+    PaginatedSetRequestSerializer,
+    BooksFilterRequestSerializer,
+)
 from books_service.exceptions.mappers import BookMapperException
 from books_service.serializers.models import BookSerializer
 from books_service.serializers.responses import (
     PaginatedBookListResponseSerializer,
-    FavoriteProductsResponseSerializer,
+    FavoriteResponseSerializer,
+    BooksetResponseSerializer,
 )
 from books_service.mappers import BookMapper
 
 from common.serializers.requests import PaginationRequestSerializer
-from common.exceptions.internal import UsersServiceException
-from common.services import UsersService
+from common.services import UsersService, OrdersService
+from common.exceptions.internal import (
+    OrdersServiceException,
+    UsersServiceException,
+)
 from common.exceptions.service import (
     BadRequestException,
     ValidationException, 
@@ -82,8 +89,39 @@ def favorites(request: Request) -> Response:
     if len(books) != len(favorites_list.books):
         raise BadRequestException(detail="failed get books from favorites")
     
-    response_serializer = FavoriteProductsResponseSerializer(
+    response_serializer = FavoriteResponseSerializer(
         favorites=favorites_list, 
+        books=books
+    )
+
+    return Response(data=response_serializer.data)
+
+
+@api_view(http_method_names=["GET"])
+@permission_classes(permission_classes=[IsAuthenticated])
+def bookset(request: Request) -> Response:
+    request_serializer = PaginatedSetRequestSerializer(request=request)
+
+    try:
+        bookset_list = OrdersService.get_from_bookset(
+            jwt_token=request.headers.get("Authorization"),
+            set_id=request_serializer.set_id,
+            page=request_serializer.page,
+            page_size=request_serializer.page_size
+        )
+    except OrdersServiceException as e:
+        raise BadRequestException(detail=e.args[0])
+    
+    bookset_map = dict(list(map(
+        lambda bookset: (bookset.book_id, bookset), 
+        bookset_list.bookset_list
+    )))
+
+    books = BookMapper.find_by_ids(ids=bookset_map.keys())
+
+    response_serializer = BooksetResponseSerializer(
+        bookset_list=bookset_list,
+        bookset_map=bookset_map,
         books=books
     )
 
