@@ -1,6 +1,10 @@
-class DjoserException(Exception):
+class UsersServiceException(Exception):
     FAILED_GET_USER_MESSAGE = "failed get user"
+
+    FAILED_GET_FAVORITES = "failed get books from favorites"
 
     @staticmethod
     def failed_get_user():
-        raise DjoserException(args=DjoserException.FAILED_GET_USER_MESSAGE)
+        raise UsersServiceException(
+            args=UsersServiceException.FAILED_GET_USER_MESSAGE
+        )

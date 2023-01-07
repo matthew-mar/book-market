@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 
 from common.exceptions.service import BadRequestException, ValidationException
-from common.exceptions.internal import DjoserException
-from common.services import DjoserService
+from common.exceptions.internal import UsersServiceException
+from common.services import UsersService
 
 from orders_service.serializers.responses import (
     BooksInBooksetPaginatedResponseSerializer
@@ -23,8 +23,8 @@ from uuid import UUID
 @permission_classes(permission_classes=[IsAuthenticated])
 def paginate_bookset(request: Request, set_id: UUID) -> Response:
     try:
-        user = DjoserService.me(jwt_token=request.headers.get("Authorization"))
-    except DjoserException as e:
+        user = UsersService.me(jwt_token=request.headers.get("Authorization"))
+    except UsersServiceException as e:
         raise BadRequestException(detail=e.args[0])
     
     request_serializer = BooksetPaginatedListRequestSerializer(

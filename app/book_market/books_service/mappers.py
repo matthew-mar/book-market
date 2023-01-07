@@ -32,3 +32,7 @@ class BookMapper:
     @staticmethod
     def filter_books(filter_param: str, filter_order: str) -> QuerySet[Book]:
         return Book.objects.all().order_by(f"{filter_order}{filter_param}")
+    
+    @staticmethod
+    def find_by_ids(ids: list[UUID]) -> QuerySet[Book]:
+        return Book.objects.filter(id__in=ids)

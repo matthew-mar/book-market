@@ -1,6 +1,6 @@
 from common.serializers.requests import PaginationRequestSerializer
-from common.exceptions.internal import DjoserException
-from common.services import DjoserService
+from common.exceptions.internal import UsersServiceException
+from common.services import UsersService
 from common.exceptions.service import (
     ValidationException,
     BadRequestException,
@@ -92,10 +92,10 @@ class OrderCreateRequestSerializer(BaseSerializer):
             raise ValidationException(detail="address must be string")
 
         try:
-            self.user = DjoserService.me(
+            self.user = UsersService.me(
                 jwt_token=self.request.headers.get("Authorization")
             )
-        except DjoserException as e:
+        except UsersServiceException as e:
             raise BadRequestException(detail=e.args[0])
 
         try:
@@ -129,8 +129,8 @@ class OrderPaginatedListRequestSerializer(PaginationRequestSerializer):
         super().validate()
 
         try:
-            self.user = DjoserService.me(
+            self.user = UsersService.me(
                 jwt_token=self.request.headers.get("Authorization")
             )
-        except DjoserException as e:
+        except UsersServiceException as e:
             raise BadRequestException(detail=e.args[0])
