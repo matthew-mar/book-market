@@ -5,6 +5,8 @@ class UsersServiceException(Exception):
 
     FAILED_ADD_TO_FAVORITES_MESSAGE = "failed add book to favorites"
 
+    FAILED_REMOVE_FROM_FAVORITES_MESSAGE = "failed remove book from favorites"
+
     @staticmethod
     def failed_get_user():
         raise UsersServiceException(
