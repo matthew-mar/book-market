@@ -1,45 +1,27 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.pagination import DjangoPaginator
-from rest_framework.response import Response
-from rest_framework.request import Request
-
 from common.serializers.requests import PaginationRequestSerializer
-from common.exceptions.service import ValidationException
-from common.services import UsersService
+from common.middlewares import view_wrapper
+from common.utils import HttpMethod
 
-from users_service.mappers import UserMapper, FavoriteMapper
 from users_service.serializers.responses import (
     FavoritePaginatedResponseSerializer
 )
+from users_service.mappers import FavoriteMapper
+from users_service.mappers import UserMapper
+from users_service.models import Favorite
+
+from rest_framework.permissions import IsAuthenticated
+from django.db.models import QuerySet
 
 
-@api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])
-def paginate(request: Request) -> Response:
-    request_serializer = PaginationRequestSerializer(request=request)
+@view_wrapper(
+    http_method_names=[HttpMethod.GET],
+    permissions=[IsAuthenticated],
+    request_serializer_class=PaginationRequestSerializer,
+    response_serializer_class=FavoritePaginatedResponseSerializer
+)
+def paginate(
+    request_serializer: PaginationRequestSerializer
+) -> QuerySet[Favorite]:
+    user = UserMapper.get_by_id(id=request_serializer.user.id)
 
-    user_data = UsersService.me(
-        jwt_token=request.headers.get("Authorization")
-    )
-
-    user = UserMapper.get_by_id(id=user_data.id)
-
-    favorites = FavoriteMapper.paginate_for_user(user=user)
-
-    paginator = DjangoPaginator(
-        object_list=favorites,
-        per_page=request_serializer.page_size
-    )
-    
-    if paginator.num_pages < request_serializer.page:
-        raise ValidationException(
-            detail=f"page number too large, max - {paginator.num_pages}"
-        )
-    
-    response_serializer = FavoritePaginatedResponseSerializer(
-        paginator=paginator,
-        page_number=request_serializer.page
-    )
-
-    return Response(data=response_serializer.data)
+    return FavoriteMapper.paginate_for_user(user=user)

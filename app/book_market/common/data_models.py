@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Self
+from typing import Any, Self
 from uuid import UUID
 
 
@@ -37,3 +37,22 @@ class BooksetDataList:
     previous: int
     page_size: int
     bookset_list: list[BooksetData]
+
+
+@dataclass
+class PaginatedResponse:
+    count: int
+    next_page: int
+    previous_page: int
+    page_size: int
+    results: list[Any]
+
+    @property
+    def json(self: Self) -> dict:
+        return {
+            "count": self.count,
+            "next_page": self.next_page,
+            "previous_page": self.previous_page,
+            "page_size": self.page_size,
+            "results": self.results,
+        }
