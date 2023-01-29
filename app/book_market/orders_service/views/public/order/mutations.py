@@ -1,23 +1,25 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.request import Request
-
+from orders_service.serializers.responses import OrderDetailResponseSerializer
 from orders_service.serializers.requests import OrderCreateRequestSerializer
 from orders_service.exceptions.mappers import OrderMapperException
 from orders_service.mappers import OrderMapper
+from orders_service.models import Order
 
-from common.serializers.responses import SuccessResponseSerializer
 from common.exceptions.service import BadRequestException
+from common.middlewares import view_wrapper
+from common.utils import HttpMethod
+
+from rest_framework.permissions import IsAuthenticated
 
 
-@api_view(http_method_names=["POST"])
-@permission_classes(permission_classes=[IsAuthenticated])
-def create(request: Request) -> Response:
-    request_serializer = OrderCreateRequestSerializer(request=request)
-
+@view_wrapper(
+    http_method_names=[HttpMethod.POST],
+    permissions=[IsAuthenticated],
+    request_serializer_class=OrderCreateRequestSerializer,
+    response_serializer_class=OrderDetailResponseSerializer
+)
+def create(request_serializer: OrderCreateRequestSerializer) -> Order:
     try:
-        result = OrderMapper.create(
+        return OrderMapper.create(
             payment_method=request_serializer.payment_method,
             delivery_method=request_serializer.delivery_method,
             address=request_serializer.address,
@@ -26,5 +28,3 @@ def create(request: Request) -> Response:
         )
     except OrderMapperException as e:
         raise BadRequestException(detail=e.args[0])
-    
-    return Response(data=SuccessResponseSerializer(result=result).data)

@@ -1,5 +1,8 @@
-from common.serializers.requests import PaginationRequestSerializer
 from common.exceptions.internal import UsersServiceException
+from common.serializers.requests import (
+    PaginationRequestSerializer, 
+    BaseRequestSerializer,
+)
 from common.services import UsersService
 from common.exceptions.service import (
     ValidationException,
@@ -7,9 +10,6 @@ from common.exceptions.service import (
     NotFoundException,
 )
 from common.utils import is_valid_uuid
-
-from rest_framework.serializers import BaseSerializer
-from rest_framework.request import Request
 
 from orders_service.exceptions.mappers import (
     DeliveryMethodMapperException,
@@ -21,43 +21,39 @@ from orders_service.mappers import (
     BooksetMapper, 
 )
 
+from rest_framework.request import Request
 from typing import Self
 from uuid import UUID
 
 
 class BooksetPaginatedListRequestSerializer(PaginationRequestSerializer):
-    def __init__(
-        self: Self, 
-        request: Request, 
-        set_id: UUID, 
-        user_id: UUID
-    ) -> Self:
-        self.user_id = user_id
+    def __init__(self: Self, request: Request, set_id: UUID) -> Self:
         self.set_id = set_id
         super().__init__(request)
     
     def validate(self: Self) -> None:
         super().validate()
-
+        
         books_in_set_count = BooksetMapper.count_for_user_in_set(
-            user_id=self.user_id,
+            user_id=self.user.id,
             set_id=self.set_id
         )
         if books_in_set_count == 0:
             raise NotFoundException(detail=f"set_id {self.set_id} not exist")
 
 
-class OrderCreateRequestSerializer(BaseSerializer):
+class OrderCreateRequestSerializer(BaseRequestSerializer):
     def __init__(self: Self, request: Request) -> Self:
-        self.request = request
-        self.validate()
-
+        super().__init__(request)
+    
     def validate(self: Self) -> None:
+        super().validate()
+
         payment_method_id = self.request.data.get("payment_method_id")
         delivery_method_id = self.request.data.get("delivery_method_id")
         set_id = self.request.data.get("set_id")
         address = self.request.data.get("address")
-        
+
         if payment_method_id is None:
             raise ValidationException(detail="payment_method_id is required")
         
@@ -66,7 +62,7 @@ class OrderCreateRequestSerializer(BaseSerializer):
                 detail=f"payment_method_id value ({payment_method_id}) " 
                     "is not a valid uuid string"
             )
-
+        
         if delivery_method_id is None:
             raise ValidationException(detail="delivery_method_id is required")
         
@@ -75,7 +71,7 @@ class OrderCreateRequestSerializer(BaseSerializer):
                 detail=f"delivery_method_id value ({delivery_method_id}) " 
                     "is not a valid uuid string"
             )
-
+        
         if set_id is None:
             raise ValidationException(detail="set_id is required")
         
@@ -84,20 +80,13 @@ class OrderCreateRequestSerializer(BaseSerializer):
                 detail=f"set_id value ({set_id}) " 
                     "is not a valid uuid string"
             )
-
+        
         if address is None:
             raise ValidationException(detail="address is required")
         
         if not isinstance(address, str):
             raise ValidationException(detail="address must be string")
-
-        try:
-            self.user = UsersService.me(
-                jwt_token=self.request.headers.get("Authorization")
-            )
-        except UsersServiceException as e:
-            raise BadRequestException(detail=e.args[0])
-
+        
         try:
             self.payment_method = PayMethodMapper.get_by_id(
                 id=payment_method_id
@@ -119,18 +108,3 @@ class OrderCreateRequestSerializer(BaseSerializer):
             raise BadRequestException(detail=e.args[0])
         
         self.address = address
-
-
-class OrderPaginatedListRequestSerializer(PaginationRequestSerializer):
-    def __init__(self: Self, request: Request) -> Self:
-        super().__init__(request)
-    
-    def validate(self: Self) -> None:
-        super().validate()
-
-        try:
-            self.user = UsersService.me(
-                jwt_token=self.request.headers.get("Authorization")
-            )
-        except UsersServiceException as e:
-            raise BadRequestException(detail=e.args[0])

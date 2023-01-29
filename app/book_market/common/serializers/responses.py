@@ -20,8 +20,8 @@ class BaseResponseSerializer(ABC, BaseSerializer):
         self.result = result
 
     @property
-    def data(self: Self) -> dict:
-        pass        
+    def data(self: Self) -> dict | list:
+        return self.result
 
 
 class SuccessResponseSerializer(BaseResponseSerializer):
