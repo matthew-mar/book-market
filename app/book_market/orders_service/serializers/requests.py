@@ -25,22 +25,18 @@ from typing import Self
 from uuid import UUID
 
 
+from common.serializers.requests import PaginationRequestSerializer
+
 class BooksetPaginatedListRequestSerializer(PaginationRequestSerializer):
-    def __init__(
-        self: Self, 
-        request: Request, 
-        set_id: UUID, 
-        user_id: UUID
-    ) -> Self:
-        self.user_id = user_id
+    def __init__(self: Self, request: Request, set_id: UUID) -> Self:
         self.set_id = set_id
         super().__init__(request)
     
     def validate(self: Self) -> None:
         super().validate()
-
+        
         books_in_set_count = BooksetMapper.count_for_user_in_set(
-            user_id=self.user_id,
+            user_id=self.user.id,
             set_id=self.set_id
         )
         if books_in_set_count == 0:

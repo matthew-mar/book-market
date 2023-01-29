@@ -1,52 +1,37 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.pagination import DjangoPaginator
-from rest_framework.response import Response
-from rest_framework.request import Request
+from common.middlewares import view_wrapper
+from common.utils import HttpMethod
 
-from common.exceptions.service import BadRequestException, ValidationException
-from common.exceptions.internal import UsersServiceException
-from common.services import UsersService
-
+from orders_service.serializers.responses import (
+    BooksInBooksetPaginatedResponseSerializer
+)
 from orders_service.serializers.responses import (
     BooksInBooksetPaginatedResponseSerializer
 )
 from orders_service.serializers.requests import (
     BooksetPaginatedListRequestSerializer
 )
+from orders_service.serializers.requests import (
+    BooksetPaginatedListRequestSerializer
+)
 from orders_service.mappers import BooksetMapper
+from orders_service.models import Bookset
 
+from rest_framework.permissions import IsAuthenticated
+from django.db.models import QuerySet
 from uuid import UUID
 
 
-@api_view(http_method_names=["GET"])
-@permission_classes(permission_classes=[IsAuthenticated])
-def paginate_bookset(request: Request, set_id: UUID) -> Response:
-    try:
-        user = UsersService.me(jwt_token=request.headers.get("Authorization"))
-    except UsersServiceException as e:
-        raise BadRequestException(detail=e.args[0])
-    
-    request_serializer = BooksetPaginatedListRequestSerializer(
-        request=request,
-        set_id=set_id,
-        user_id=user.id
+@view_wrapper(
+    http_method_names=[HttpMethod.GET],
+    permissions=[IsAuthenticated],
+    request_serializer_class=BooksetPaginatedListRequestSerializer,
+    response_serializer_class=BooksInBooksetPaginatedResponseSerializer
+)
+def paginate_bookset(
+    request_serializer: BooksetPaginatedListRequestSerializer,
+    set_id: UUID
+) -> QuerySet[Bookset]:
+    return BooksetMapper.find_for_user_in_set(
+        user_id=request_serializer.user.id,
+        set_id=set_id
     )
-
-    books = BooksetMapper.find_for_user_in_set(user_id=user.id, set_id=set_id)
-
-    paginator = DjangoPaginator(
-        object_list=books,
-        per_page=request_serializer.page_size
-    )
-    if paginator.num_pages < request_serializer.page:
-        raise ValidationException(
-            detail=f"page number too large max - {paginator.num_pages}"
-        )
-    
-    response_serializer = BooksInBooksetPaginatedResponseSerializer(
-        paginator=paginator,
-        page_number=request_serializer.page
-    )
-
-    return Response(data=response_serializer.data)

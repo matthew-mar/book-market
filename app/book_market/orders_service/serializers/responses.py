@@ -1,29 +1,26 @@
-from rest_framework.serializers import BaseSerializer
-from rest_framework.pagination import DjangoPaginator
+from common.serializers.responses import PaginatedResponseSerializer
+from common.serializers.requests import PaginationRequestSerializer
 
 from orders_service.serializers.models import (
-    DeliveryMethodSerializer,
-    PayMethodSerializer,
     BooksetSerializer, 
     OrderSerializer,
 )
-from orders_service.models import Order
+from orders_service.models import Bookset
 
-from common.serializers.responses import PaginatedResponseSerializer
+from rest_framework.pagination import DjangoPaginator
+from django.db.models import QuerySet
 from typing import Self
 
 
 class BooksInBooksetPaginatedResponseSerializer(PaginatedResponseSerializer):
     def __init__(
         self: Self, 
-        paginator: DjangoPaginator, 
-        page_number: int
+        request_serializer: PaginationRequestSerializer, 
+        result: QuerySet[Bookset]
     ) -> Self:
-        super().__init__(paginator, page_number)
-        self.results = BooksetSerializer(
-            instance=self.page.object_list,
-            many=True
-        ).data
+        super().__init__(request_serializer, result)
+
+        self.result = BooksetSerializer(instance=result, many=True).data
 
 
 class OrderInPaginatedListResponseSerializer(PaginatedResponseSerializer):

@@ -19,12 +19,15 @@ def view_wrapper(
         
         @api_view(http_method_names=http_method_names)
         @permission_classes(permission_classes=permissions)
-        def wrapper(request: Request) -> Response:
-            request_serializer = request_serializer_class(request=request)
+        def wrapper(request: Request, **kwargs) -> Response:
+            request_serializer = request_serializer_class(
+                request=request,
+                **kwargs
+            )
 
             response_serializer = response_serializer_class(
                 request_serializer=request_serializer,
-                result=view(request_serializer)
+                result=view(request_serializer, **kwargs)
             )
 
             return Response(data=response_serializer.data)

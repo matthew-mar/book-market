@@ -1,6 +1,8 @@
 from rest_framework.serializers import BaseSerializer
 from rest_framework.request import Request
 
+from common.exceptions.internal import UsersServiceException
+from common.exceptions.service import BadRequestException
 from common.exceptions.service import ValidationException
 from common.services import UsersService
 from common.data_models import UserData
@@ -24,10 +26,13 @@ class BaseRequestSerializer(ABC, BaseSerializer):
     def user(self: Self) -> UserData | None:
         jwt_token = self.request.headers.get("Authorization")
 
-        if (jwt_token is None):
+        if jwt_token is None:
             return None
         
-        return UsersService.me(jwt_token=jwt_token)
+        try:
+            return UsersService.me(jwt_token=jwt_token)
+        except UsersServiceException as e:
+            raise BadRequestException(detail=e.args[0])
 
 
 class PaginationRequestSerializer(BaseRequestSerializer):
