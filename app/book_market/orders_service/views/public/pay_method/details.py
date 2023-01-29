@@ -1,18 +1,18 @@
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework.request import Request
-
-from orders_service.serializers.models import PayMethodSerializer
 from orders_service.mappers import PayMethodMapper
+from orders_service.serializers.responses import (
+    PaymentMethodsResponseSerializer
+)
+from orders_service.models import PayMethod
+
+from common.middlewares import view_wrapper
+from common.utils import HttpMethod
+
+from django.db.models import QuerySet
 
 
-@api_view(http_method_names=["GET"])
-def get_payment_methods(request: Request) -> Response:
-    payment_methods = PayMethodMapper.all()
-    
-    response_serializer = PayMethodSerializer(
-        instance=payment_methods, 
-        many=True
-    )
-
-    return Response(data=response_serializer.data)
+@view_wrapper(
+    http_method_names=[HttpMethod.GET],
+    response_serializer_class=PaymentMethodsResponseSerializer
+)
+def get_payment_methods(*args) -> QuerySet[PayMethod]:
+    return PayMethodMapper.all()

@@ -25,3 +25,5 @@ class HttpMethod:
     POST = "POST"
 
     DELETE = "DELETE"
+
+    PATCH = "PATCH"

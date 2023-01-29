@@ -1,61 +1,33 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.request import Request
-
 from common.serializers.responses import SuccessResponseSerializer
 from common.serializers.requests import ForBookRequestSerializer
 from common.exceptions.service import BadRequestException
-from common.exceptions.internal import UsersServiceException
-from common.services import UsersService
+from common.middlewares import view_wrapper
+from common.utils import HttpMethod
 
 from orders_service.exceptions.mappers import CartMapperException
 from orders_service.mappers import CartMapper
 
-
-@api_view(http_method_names=["POST", "DELETE"])
-@permission_classes(permission_classes=[IsAuthenticated])
-def cart_controller(request: Request) -> Response:
-    match (request.method):
-        case "POST":
-            return add_to_cart(request=request)
-        case "DELETE":
-            return delete_from_cart(request=request)
+from rest_framework.permissions import IsAuthenticated
 
 
-def add_to_cart(request: Request) -> Response:
-    request_serializer = ForBookRequestSerializer(requrest=request)
-
+@view_wrapper(
+    http_method_names=[HttpMethod.POST, HttpMethod.DELETE],
+    permissions=[IsAuthenticated],
+    request_serializer_class=ForBookRequestSerializer,
+    response_serializer_class=SuccessResponseSerializer
+)
+def cart_controller(request_resializer: ForBookRequestSerializer) -> bool:
     try:
-        user = UsersService.me(jwt_token=request.headers.get("Authorization"))
-    except UsersServiceException as e:
-        raise BadRequestException(detail=e.args[0])
-    
-    try:
-        result = CartMapper.add_or_create(
-            user_id=user.id, 
-            book_id=request_serializer.book_id
-        )
+        match request_resializer.request.method:
+            case HttpMethod.POST:
+                return CartMapper.add_or_create(
+                    user_id=request_resializer.user.id,
+                    book_id=request_resializer.book_id
+                )
+            case HttpMethod.DELETE:
+                return CartMapper.delete_book_from_cart(
+                    user_id=request_resializer.user.id,
+                    book_id=request_resializer.book_id
+                )
     except CartMapperException as e:
         raise BadRequestException(detail=e.args[0])
-
-    return Response(data=SuccessResponseSerializer(result=result).data)
-
-
-def delete_from_cart(request: Request) -> Response:
-    request_serializer = ForBookRequestSerializer(requrest=request)
-
-    try:
-        user = UsersService.me(jwt_token=request.headers.get("Authorization"))
-    except UsersServiceException as e:
-        raise BadRequestException(detail=e.args[0])
-    
-    try:
-        result = CartMapper.delete_book_from_cart(
-            user_id=user.id, 
-            book_id=request_serializer.book_id
-        )
-    except CartMapperException as e:
-        raise BadRequestException(detail=e.args[0])
-    
-    return Response(data=SuccessResponseSerializer(result=result).data)

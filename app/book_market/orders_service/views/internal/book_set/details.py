@@ -4,12 +4,6 @@ from common.utils import HttpMethod
 from orders_service.serializers.responses import (
     BooksInBooksetPaginatedResponseSerializer
 )
-from orders_service.serializers.responses import (
-    BooksInBooksetPaginatedResponseSerializer
-)
-from orders_service.serializers.requests import (
-    BooksetPaginatedListRequestSerializer
-)
 from orders_service.serializers.requests import (
     BooksetPaginatedListRequestSerializer
 )

@@ -22,7 +22,7 @@ from uuid import UUID, uuid4
 
 class PayMethodMapper:
     @staticmethod
-    def all() -> QuerySet:
+    def all() -> QuerySet[PayMethod]:
         return PayMethod.objects.all()
     
     @staticmethod
@@ -37,7 +37,7 @@ class PayMethodMapper:
 
 class DeliveryMethodMapper:
     @staticmethod
-    def all() -> QuerySet:
+    def all() -> QuerySet[DeliveryMethod]:
         return DeliveryMethod.objects.all()
 
     @staticmethod
@@ -266,15 +266,17 @@ class OrderMapper:
         address: str,
         set_id: UUID,
         user_id: UUID
-    ) -> bool:
+    ) -> Order:
         try:
-            Order(
+            order = Order(
                 payment_method=payment_method, 
                 delivery_method=delivery_method,
                 address=address,
                 set_id=set_id,
                 user_id=user_id
-            ).save()
+            )
+
+            order.save()
 
             try:
                 CartMapper.delete(user_id=user_id, set_id=set_id)
@@ -283,7 +285,7 @@ class OrderMapper:
                     f"{OrderMapperException.FAILED_CREATE_MESSAGE}: {e.args[0]}"
                 )
 
-            return True
+            return order
         except IntegrityError:
             raise OrderMapperException(
                 OrderMapperException.ORDER_ALREADY_EXIST_MESSAGE

@@ -8,17 +8,15 @@ from common.services import UsersService
 from common.data_models import UserData
 from common.utils import is_valid_uuid
 
-from abc import ABC, abstractmethod
 from typing import Self, Any
 from uuid import UUID
 
 
-class BaseRequestSerializer(ABC, BaseSerializer):
-    def __init__(self: Self, request: Request) -> Self:
+class BaseRequestSerializer(BaseSerializer):
+    def __init__(self: Self, request: Request, **kwargs) -> Self:
         self.request = request
         self.validate()
 
-    @abstractmethod
     def validate(self: Self) -> None:
         pass
     

@@ -11,9 +11,9 @@ from typing import Callable
 # TODO: подумать еще над названиями
 def view_wrapper(
     http_method_names: list[str],
-    permissions: list[type],
-    request_serializer_class: BaseRequestSerializer,
-    response_serializer_class
+    response_serializer_class: BaseResponseSerializer,
+    request_serializer_class: BaseRequestSerializer = BaseRequestSerializer,
+    permissions: list[type] = []
 ) -> Callable:
     def middleware(view: Callable) -> Callable:
         
@@ -31,7 +31,7 @@ def view_wrapper(
             )
 
             return Response(data=response_serializer.data)
-            
+
         return wrapper
     
     return middleware
