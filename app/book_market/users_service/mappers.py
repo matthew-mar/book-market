@@ -27,7 +27,7 @@ class FavoriteMapper:
             FavoriteMapperException.already_exists()
 
     @staticmethod
-    def paginate_for_user(user: User) -> QuerySet:
+    def paginate_for_user(user: User) -> QuerySet[Favorite]:
         return Favorite.objects.filter(user=user)
 
     @staticmethod
