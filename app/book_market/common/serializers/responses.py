@@ -24,12 +24,16 @@ class BaseResponseSerializer(ABC, BaseSerializer):
         pass        
 
 
-class SuccessResponseSerializer(BaseSerializer):
-    def __init__(self: Self, result: bool):
-        self.result = result
-
+class SuccessResponseSerializer(BaseResponseSerializer):
+    def __init__(
+        self: Self, 
+        request_serializer: BaseRequestSerializer, 
+        result: bool
+    ) -> Self:
+        super().__init__(request_serializer, result)
+    
     @property
-    def data(self: Self):
+    def data(self: Self) -> dict:
         return {
             "success": self.result
         }

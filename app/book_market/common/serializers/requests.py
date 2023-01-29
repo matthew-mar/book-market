@@ -7,7 +7,6 @@ from common.data_models import UserData
 from common.utils import is_valid_uuid
 
 from abc import ABC, abstractmethod
-from accessify import private
 from typing import Self, Any
 from uuid import UUID
 
@@ -16,7 +15,7 @@ class BaseRequestSerializer(ABC, BaseSerializer):
     def __init__(self: Self, request: Request) -> Self:
         self.request = request
         self.validate()
-    
+
     @abstractmethod
     def validate(self: Self) -> None:
         pass
@@ -65,12 +64,12 @@ class PaginationRequestSerializer(BaseRequestSerializer):
         self.page, self.page_size = params.values()
 
 
-class ForBookRequestSerializer(BaseSerializer):
-    def __init__(self: Self, requrest: Request) -> Self:
-        self.request = requrest
-        self.validate()
+class ForBookRequestSerializer(BaseRequestSerializer):
+    book_id: UUID
 
-    @private
+    def __init__(self: Self, request: Request) -> Self:
+        super().__init__(request)
+    
     def validate_book_id(self: Self, value: Any) -> UUID:
         if value is None:
             raise ValidationException(detail="book_id is required")
@@ -81,8 +80,7 @@ class ForBookRequestSerializer(BaseSerializer):
             )
         
         return value
-    
-    @private
+
     def validate(self: Self) -> None:
         self.book_id = self.validate_book_id(
             value=self.request.data.get("book_id")

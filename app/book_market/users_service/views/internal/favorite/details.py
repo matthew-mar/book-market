@@ -1,5 +1,6 @@
 from common.serializers.requests import PaginationRequestSerializer
 from common.middlewares import view_wrapper
+from common.utils import HttpMethod
 
 from users_service.serializers.responses import (
     FavoritePaginatedResponseSerializer
@@ -13,7 +14,7 @@ from django.db.models import QuerySet
 
 
 @view_wrapper(
-    http_method_names=["GET"],
+    http_method_names=[HttpMethod.GET],
     permissions=[IsAuthenticated],
     request_serializer_class=PaginationRequestSerializer,
     response_serializer_class=FavoritePaginatedResponseSerializer
