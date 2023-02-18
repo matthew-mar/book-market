@@ -4,10 +4,10 @@ from common.exceptions.internal import (
     OrdersServiceException,
     UsersServiceException, 
 )
-from common.data_models import (
-    BooksetDataList,
+from common.dto import (
+    BookSetPaginatedList,
     FavoritesList,
-    BooksetData,
+    BookSetMap,
     UserData,
 )
 
@@ -32,10 +32,11 @@ class UsersService:
         decoded_response: dict = response.json()
 
         return UserData(
+            token=jwt_token,
             id=decoded_response.get("id"),
             name=decoded_response.get("name"),
-            surname=decoded_response.get("surname"),
             email=decoded_response.get("email"),
+            surname=decoded_response.get("surname"),
             phone_number=decoded_response.get("phone_number")
         )
     
@@ -67,8 +68,8 @@ class UsersService:
         return FavoritesList(
             books=decoded_response.get("results"),
             count=decoded_response.get("count"),
-            next=decoded_response.get("next"),
-            previous=decoded_response.get("previous"),
+            next=decoded_response.get("next_page"),
+            previous=decoded_response.get("previous_page"),
             page_size=decoded_response.get("page_size")
         )
 
@@ -122,7 +123,7 @@ class OrdersService:
         set_id: UUID,
         page: int,
         page_size: int
-    ) -> BooksetDataList:
+    ) -> BookSetPaginatedList:
         response = requests.get(
             url=f"{OrdersService.BASE_URL}/book-set/{set_id}",
             headers={
@@ -142,19 +143,13 @@ class OrdersService:
         
         decoded_response: dict = response.json()
 
-        return BooksetDataList(
+        return BookSetPaginatedList(
             count=decoded_response.get("count"),
-            next=decoded_response.get("next"),
-            previous=decoded_response.get("previous"),
+            next_page=decoded_response.get("next_page"),
+            previous_page=decoded_response.get("previous_page"),
             page_size=decoded_response.get("page_size"),
             bookset_list=list(map(
-                lambda bookset_dict: BooksetData(
-                    id=bookset_dict.get("id"),
-                    set_id=bookset_dict.get("set_id"),
-                    user_id=bookset_dict.get("user_id"),
-                    amount=bookset_dict.get("amount"),
-                    book_id=bookset_dict.get("book_id")
-                ),
+                lambda bookset_dict: BookSetMap.from_json(data=bookset_dict),
                 decoded_response.get("results")
             ))
         )

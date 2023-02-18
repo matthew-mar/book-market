@@ -1,6 +1,8 @@
 from orders_service.models import PayMethod, DeliveryMethod, Bookset, Order
 from rest_framework.serializers import ModelSerializer
 
+from common.dto import BookSetMap
+
 
 class PayMethodSerializer(ModelSerializer):
     class Meta:
@@ -22,7 +24,10 @@ class BooksetSerializer(ModelSerializer):
 
 class BooksetInPaginationListSerializer(BooksetSerializer):
     def to_representation(self, instance: Bookset):
-        return instance.book_id
+        return BookSetMap(
+            book_id=instance.book_id, 
+            amount=instance.amount
+        ).json
 
 
 class OrderSerializer(ModelSerializer):

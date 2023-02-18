@@ -9,9 +9,9 @@ from common.serializers.requests import (
 
 from orders_service.models import Bookset, DeliveryMethod, Order, PayMethod
 from orders_service.serializers.models import (
+    BooksetInPaginationListSerializer, 
     DeliveryMethodSerializer,
     PayMethodSerializer,
-    BooksetSerializer, 
     OrderSerializer,
 )
 
@@ -27,7 +27,10 @@ class BooksInBooksetPaginatedResponseSerializer(PaginatedResponseSerializer):
     ) -> Self:
         super().__init__(request_serializer, result)
 
-        self.result = BooksetSerializer(instance=result, many=True).data
+        self.result = BooksetInPaginationListSerializer(
+            instance=result, 
+            many=True
+        ).data
 
 
 class DeliveryMethodsResponseSerializer(BaseResponseSerializer):

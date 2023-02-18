@@ -1,15 +1,16 @@
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework.request import Request
+from common.middlewares import view_wrapper
+from common.utils import HttpMethod
 
-from books_service.serializers.models import AuthorSerializer
+from books_service.serializers.responses import AuthorsReponseSerializer
 from books_service.mappers import AuthorMapper
+from books_service.models import Author
+
+from django.db.models import QuerySet
 
 
-@api_view(http_method_names=["GET"])
-def authors(request: Request) -> Response:
-    authors = AuthorMapper.all()
-
-    response_serializer = AuthorSerializer(instance=authors, many=True)
-
-    return Response(data=response_serializer.data)
+@view_wrapper(
+    http_method_names=[HttpMethod.GET],
+    response_serializer_class=AuthorsReponseSerializer
+)
+def authors(*args) -> QuerySet[Author]:
+    return AuthorMapper.all()
