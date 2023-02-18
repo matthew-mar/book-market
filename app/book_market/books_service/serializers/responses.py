@@ -1,79 +1,87 @@
-from rest_framework.serializers import BaseSerializer
-from rest_framework.pagination import DjangoPaginator
-
-from common.data_models import FavoritesList, BooksetDataList, BooksetData
-from common.serializers.responses import PaginatedResponseSerializer
-
-from books_service.serializers.models import BookSerializer
-from books_service.models import Book
-
 from django.db.models import QuerySet
 from typing import Self
-from uuid import UUID
+
+from common.serializers.requests import BaseRequestSerializer
+from common.serializers.responses import (
+    PaginatedResponseSerializer, 
+    BaseResponseSerializer,
+)
+from common.dto import PaginatedResponse
+
+from books_service.serializers.models import AuthorSerializer, BookSerializer
+from books_service.serializers.requests import BooksFilterRequestSerializer
+from books_service.dto import BooksFromBookset
+from books_service.models import Author, Book
+
+
+class AuthorsReponseSerializer(BaseResponseSerializer):
+    def __init__(
+        self: Self, 
+        request_serializer: BaseRequestSerializer, 
+        result: QuerySet[Author]
+    ) -> Self:
+        super().__init__(request_serializer, result)
+
+        self.result = AuthorSerializer(instance=result, many=True).data
+
+
+class BookDetailResponseSerializer(BaseResponseSerializer):
+    def __init__(
+        self: Self, 
+        request_serializer: BaseRequestSerializer, 
+        result: Book
+    ) -> Self:
+        super().__init__(request_serializer, result)
+
+        self.result = BookSerializer(instance=result).data
 
 
 class PaginatedBookListResponseSerializer(PaginatedResponseSerializer):
     def __init__(
         self: Self, 
-        paginator: DjangoPaginator, 
-        page_number: int
+        request_serializer: BooksFilterRequestSerializer, 
+        result: QuerySet[Book]
     ) -> Self:
-        super().__init__(paginator, page_number)
-        self.results = BookSerializer(
-            instance=self.page.object_list,
-            many=True
-        ).data
+        super().__init__(request_serializer, result)
+
+        self.result = BookSerializer(instance=result, many=True).data
 
 
-class FavoriteResponseSerializer(BaseSerializer):
+class FavoriteResponseSerializer(BaseResponseSerializer):
     def __init__(
         self: Self, 
-        favorites: FavoritesList, 
-        books: QuerySet[Book]
+        request_serializer: BaseRequestSerializer,
+        result: PaginatedResponse
     ) -> Self:
-        self.favorites = favorites
-        self.books = books
-    
-    @property
-    def data(self: Self):
-        return {
-            "count": self.favorites.count,
-            "next": self.favorites.next,
-            "previous": self.favorites.previous,
-            "page_size": self.favorites.page_size,
-            "favorites": BookSerializer(instance=self.books, many=True).data
-        }
+        super().__init__(request_serializer, result)
 
-
-class BooksetResponseSerializer(BaseSerializer):
-    def __init__(
-        self: Self,
-        bookset_list: BooksetDataList,
-        bookset_map: dict[UUID:BooksetData],
-        books: QuerySet[Book]
-    ) -> Self:
-        self.bookset_list = bookset_list
-        self.bookset_map = bookset_map
-        self.books = books
-    
-    @property
-    def data(self: Self):
-        books_serializer_data = BookSerializer(
-            instance=self.books, 
+        result.results = BookSerializer(
+            instance=result.results, 
             many=True
         ).data
 
-        for book in books_serializer_data:
-            book_id = str(book.get("id"))
-            amount_in_cart = {
-                "amount_in_set": self.bookset_map.get(book_id).amount
-            }
-            book.update(amount_in_cart)
+        self.result = result.json
 
-        return {
-            "count": self.bookset_list.count,
-            "next": self.bookset_list.next,
-            "previous": self.bookset_list.previous,
-            "page_size": self.bookset_list.page_size,
-            "bookset": books_serializer_data
-        }
+
+class BooksetResponseSerializer(BaseResponseSerializer):
+    def __init__(
+        self: Self, 
+        request_serializer: BaseRequestSerializer, 
+        result: BooksFromBookset
+    ) -> Self:
+        super().__init__(request_serializer, result)
+
+        books_data = BookSerializer(instance=result.books, many=True).data
+
+        for book in books_data:
+            book_id = str(book.get("id"))
+            amount_in_bookset = result.paginated_booksets.booksets.get(book_id)
+            book["amount"] = amount_in_bookset
+        
+        self.result = PaginatedResponse(
+            count=result.paginated_booksets.count,
+            next_page=result.paginated_booksets.next_page,
+            previous_page=result.paginated_booksets.previous_page,
+            page_size=result.paginated_booksets.page_size,
+            results=books_data
+        ).json

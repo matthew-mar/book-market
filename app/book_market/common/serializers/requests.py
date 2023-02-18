@@ -1,12 +1,11 @@
 from rest_framework.serializers import BaseSerializer
 from rest_framework.request import Request
 
+from common.exceptions.service import BadRequestException, ValidationException
 from common.exceptions.internal import UsersServiceException
-from common.exceptions.service import BadRequestException
-from common.exceptions.service import ValidationException
 from common.services import UsersService
-from common.data_models import UserData
 from common.utils import is_valid_uuid
+from common.dto import UserData
 
 from typing import Self, Any
 from uuid import UUID

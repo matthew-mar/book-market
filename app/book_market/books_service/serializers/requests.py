@@ -7,9 +7,11 @@ from typing import Self
 
 
 class BooksFilterRequestSerializer(PaginationRequestSerializer):
+    order: str
+    
     def __init__(self: Self, request: Request) -> Self:
         super().__init__(request)
-
+    
     def validate(self: Self) -> None:
         super().validate()
 
@@ -21,12 +23,12 @@ class BooksFilterRequestSerializer(PaginationRequestSerializer):
         
         if not isinstance(order, str):
             raise ValidationException(
-                detail="order must be string one of (asc, desc)"
+                detail="order must be string and one of (asc, desc)"
             )
         
         if order not in ("asc", "desc"):
-            raise ValidationException(detail="order can be only asc or desc")
-        
+            raise ValidationException(detail="order can only be asc or desc")
+
         match order:
             case "asc":
                 self.order = ""
@@ -35,6 +37,8 @@ class BooksFilterRequestSerializer(PaginationRequestSerializer):
 
 
 class PaginatedSetRequestSerializer(PaginationRequestSerializer):
+    set_id: str
+
     def __init__(self: Self, request: Request) -> Self:
         super().__init__(request)
     

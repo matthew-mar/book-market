@@ -1,10 +1,12 @@
 from rest_framework.serializers import BaseSerializer
 from rest_framework.pagination import DjangoPaginator
 
-from common.serializers.requests import PaginationRequestSerializer
-from common.serializers.requests import BaseRequestSerializer
 from common.exceptions.service import ValidationException
-from common.data_models import PaginatedResponse
+from common.serializers.requests import (
+    PaginationRequestSerializer, 
+    BaseRequestSerializer,
+)
+from common.dto import PaginatedResponse
 
 from typing import Self, Any
 from abc import ABC
