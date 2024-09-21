@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./app
+    command: python ./book_market/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./app/:/usr/src/app/
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env.dev
+  
+  db:
+    image: postgres:15.0-alpine
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=django_user
+      - POSTGRES_PASSWORD=django_password
+      - POSTGRES_DB=django_db
+
+  dash:
+    image: mauricenino/dashdot:latest
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - '1488:3001'
+    volumes:
+      - /:/mnt/host:ro
+
+volumes:
+  postgres_volume:
